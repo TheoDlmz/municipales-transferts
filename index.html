@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transferts politiques municipales 2020 → 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0a0f;color:#e0e0e0;font-family:'DM Sans',sans-serif;min-height:100vh;padding:10px 4px}
+  .header{text-align:center;margin-bottom:10px}
+  .header h1{font-family:'Space Mono',monospace;font-size:1.4rem;color:#fff;letter-spacing:-0.5px;margin-bottom:4px}
+  .header p{font-size:0.85rem;color:#888}
+  .container{margin:0 auto;position:relative}
+  #sankey{width:100%;height:900px;cursor:default}
+  .tooltip{position:fixed;background:rgba(20,20,30,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity 0.15s;backdrop-filter:blur(10px);z-index:100;font-family:'DM Sans',sans-serif;max-width:320px}
+  .tooltip .label{font-weight:700;color:#fff;margin-bottom:4px}
+  .tooltip .value{color:#aaa}
+  .controls{display:flex;justify-content:center;gap:10px 20px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:0 4px}
+  .controls label{font-size:12px;color:#888;display:flex;align-items:center;gap:4px}
+  .controls input[type="range"]{width:160px;accent-color:#667eea}
+  .controls span{font-family:'Space Mono',monospace;font-size:11px;color:#bbb;min-width:90px}
+  .stats{font-family:'Space Mono',monospace;font-size:11px;color:#666;text-align:center;margin-bottom:4px}
+  .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100vh;background:rgba(15,15,25,0.98);border-left:1px solid rgba(255,255,255,0.1);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
+  .panel.open{right:0}
+  .panel-close{position:absolute;top:12px;right:16px;background:none;border:1px solid rgba(255,255,255,0.2);color:#aaa;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+  .panel-close:hover{background:rgba(255,255,255,0.1);color:#fff}
+  .panel h2{font-family:'Space Mono',monospace;font-size:14px;color:#fff;margin-bottom:6px}
+  .panel .flow-label{font-size:13px;color:#aaa;margin-bottom:16px}
+  .panel .city-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);gap:8px}
+  .panel .city-name{font-size:13px;color:#ddd;flex:1}
+  .panel .city-ins{font-family:'Space Mono',monospace;font-size:12px;color:#888}
+  .panel .city-rank{font-family:'Space Mono',monospace;font-size:11px;color:#555;width:24px;flex-shrink:0}
+  .hint{font-size:10px;color:#555;text-align:center;margin-bottom:4px;font-style:italic}
+  .drop-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:12px;padding:60px 40px;text-align:center;margin:40px auto;max-width:600px;color:#666;transition:all 0.2s}
+  .drop-zone.over{border-color:#667eea;color:#aaa;background:rgba(102,126,234,0.05)}
+  .drop-zone input{display:none}
+  .drop-zone label{cursor:pointer;color:#667eea;text-decoration:underline}
+  .drop-zone p{margin-top:12px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Municipales 2020 → 2026</h1>
+  <p>Transferts de nuances politiques — filtré par taille de commune (inscrits 2026)</p>
+</div>
+<div class="container">
+  <div id="dropArea" style="text-align:center;padding:60px;color:#666;font-size:14px">
+    Chargement des données…
+  </div>
+  <div id="mainUI" style="display:none">
+    <div class="controls">
+      <label>Communes de plus de :
+        <input type="range" id="threshold" min="0" max="100000" step="500" value="0">
+        <span id="thresholdLabel">0 inscrits</span>
+      </label>
+      <label>Hauteur :
+        <input type="range" id="heightSlider" min="400" max="3000" step="50" value="900">
+        <span id="heightLabel">900 px</span>
+      </label>
+      <label style="cursor:pointer;user-select:none">
+        Pondération :
+        <span id="modeToggle" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:11px;color:#bbb;cursor:pointer">Inscrits</span>
+      </label>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="hint">Cliquez sur un flux pour voir les plus grandes villes concernées</div>
+    <svg id="sankey"></svg>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+</div>
+<div class="panel" id="panel">
+  <button class="panel-close" id="panelClose">×</button>
+  <h2 id="panelTitle"></h2>
+  <div class="flow-label" id="panelSub"></div>
+  <div id="panelList"></div>
+</div>
+<script>
+let CITIES = [];
+
+function loadCSV(text) {
+  const result = Papa.parse(text, { delimiter: ";", header: true, skipEmptyLines: true });
+  CITIES = [];
+  for (const row of result.data) {
+    const ins2026str = (row["Inscrits 2026"] || "").trim();
+    if (!ins2026str || ins2026str === "Non disponible") continue;
+    const ins = parseInt(ins2026str);
+    if (isNaN(ins)) continue;
+
+    let n2020 = (row["Nuance 2020"] || "").trim();
+    let n2026 = (row["Nuance 2026"] || "").trim();
+    const commune = (row["Commune"] || "").trim();
+
+    // Sans étiquette pour les villes sans nuance
+    if (!n2020) n2020 = "LNC";
+    if (!n2026 || n2026 === "Non disponible" || n2026 === "Aucun") n2026 = "LNC";
+
+    CITIES.push([n2020, n2026, ins, commune]);
+  }
+  document.getElementById("dropArea").style.display = "none";
+  document.getElementById("mainUI").style.display = "block";
+  render(0);
+}
+
+// Auto-load CSV from same directory
+fetch("comparaison_2020_2026.csv")
+  .then(r => r.text())
+  .then(loadCSV)
+  .catch(err => {
+    document.getElementById("dropArea").innerHTML =
+      '<span style="color:#c44">Erreur : impossible de charger comparaison_2020_2026.csv</span><br>' +
+      '<span style="font-size:12px;color:#666">Placez le fichier CSV dans le même dossier que ce HTML.</span>';
+  });
+
+// Sankey config
+const blocOrder={"LEXG":0,"LFI":1,"LCOM":2,"LSOC":3,"LVEC":4,"LUG":5,"LDVG":6,"LRDG":6.5,"LECO":7,"LREG":8,"LDIV":9,"LNC":10,"LREN":11,"LREM":11,"LMDM":12,"LHOR":13,"LUDI":14,"LUC":15,"LDVC":16,"LLR":17,"LUD":18,"LDVD":19,"LDSV":20,"LUDR":21,"LRN":23,"LREC":24,"LUXD":25,"LEXD":26};
+const nuanceColors={"LEXG":"#bb1122","LFI":"#cc2443","LCOM":"#dd1133","LSOC":"#f06292","LVEC":"#43a047","LUG":"#e53935","LDVG":"#ef9a9a","LRDG":"#e57373","LECO":"#66bb6a","LREG":"#8d6e63","LDIV":"#bdbdbd","LNC":"#9e9e9e","LREN":"#ffab00","LREM":"#ffab00","LMDM":"#ff8f00","LHOR":"#42a5f5","LUDI":"#29b6f6","LUC":"#ffca28","LDVC":"#ffa726","LLR":"#1565c0","LUD":"#1976d2","LDVD":"#64b5f6","LDSV":"#0d47a1","LUDR":"#0d47a1","LRN":"#1a237e","LREC":"#311b92","LUXD":"#263238","LEXD":"#37474f"};
+const nuanceLabels={"LEXG":"Extrême gauche","LFI":"La France insoumise","LCOM":"PCF","LSOC":"Parti socialiste","LVEC":"Les Écologistes","LUG":"Union de la gauche","LDVG":"Divers gauche","LRDG":"Radical de gauche","LECO":"Écologiste","LREG":"Régionalistes","LDIV":"Divers","LNC":"Sans étiquette","LREN":"Renaissance","LREM":"Renaissance (2020)","LMDM":"Modem","LHOR":"Horizons","LUDI":"UDI","LUC":"Union du centre","LDVC":"Divers centre","LLR":"Les Républicains","LUD":"Union de la droite","LDVD":"Divers droite","LDSV":"Droite souverainiste","LUDR":"Union des droites","LRN":"Rassemblement National","LREC":"Reconquête","LUXD":"Union extr. droite","LEXD":"Extrême droite"};
+
+function gc(n){return nuanceColors[n]||"#757575"}
+function go(n){return blocOrder[n]!==undefined?blocOrder[n]:15}
+function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")}
+
+let currentThreshold=0;
+let weightMode="inscrits"; // "inscrits" or "communes"
+
+function aggregate(th){
+  const map={},mapCount={};let count=0,total=0;
+  for(const c of CITIES){
+    if(c[2]>=th){
+      const k=c[0]+"|"+c[1];
+      map[k]=(map[k]||0)+c[2];
+      mapCount[k]=(mapCount[k]||0)+1;
+      count++;total+=c[2];
+    }
+  }
+  const flows=[];
+  for(const[k,v]of Object.entries(map)){
+    const[a,b]=k.split("|");
+    flows.push([a,b, weightMode==="inscrits" ? v : mapCount[k]]);
+  }
+  return{flows,count,total};
+}
+function getCities(src,tgt,th){
+  return CITIES.filter(c=>c[2]>=th&&c[0]===src&&c[1]===tgt).sort((a,b)=>b[2]-a[2]);
+}
+function showPanel(src,tgt){
+  const cities=getCities(src,tgt,currentThreshold);
+  document.getElementById("panelTitle").textContent=(nuanceLabels[src]||src)+" → "+(nuanceLabels[tgt]||tgt);
+  const total=cities.reduce((a,c)=>a+c[2],0);
+  document.getElementById("panelSub").textContent=fmt(cities.length)+" communes — "+fmt(total)+" inscrits";
+  const top=cities.slice(0,50);
+  let h="";
+  top.forEach((c,i)=>{h+='<div class="city-row"><span class="city-rank">'+(i+1)+'</span><span class="city-name">'+c[3]+'</span><span class="city-ins">'+fmt(c[2])+'</span></div>'});
+  if(cities.length>50)h+='<div class="city-row" style="justify-content:center;color:#555;font-size:11px">… et '+(cities.length-50)+' autres</div>';
+  document.getElementById("panelList").innerHTML=h;
+  document.getElementById("panel").classList.add("open");
+}
+function showNodePanel(nuance, side){
+  const th = currentThreshold;
+  // Collect cities matching this nuance on the given side
+  let cities;
+  if (side === "l") {
+    // 2020 nuance — show city name, inscrits, and what they became in 2026
+    cities = CITIES.filter(c => c[2] >= th && c[0] === nuance).sort((a,b) => b[2] - a[2]);
+  } else {
+    // 2026 nuance — show city name, inscrits, and what they were in 2020
+    cities = CITIES.filter(c => c[2] >= th && c[1] === nuance).sort((a,b) => b[2] - a[2]);
+  }
+  const lb = nuanceLabels[nuance] || nuance;
+  const year = side === "l" ? "2020" : "2026";
+  const otherYear = side === "l" ? "2026" : "2020";
+  document.getElementById("panelTitle").textContent = lb + " en " + year;
+  const total = cities.reduce((a,c) => a + c[2], 0);
+  document.getElementById("panelSub").textContent = fmt(cities.length) + " communes — " + fmt(total) + " inscrits";
+  const top = cities.slice(0, 50);
+  let h = "";
+  top.forEach((c, i) => {
+    const otherNuance = side === "l" ? c[1] : c[0];
+    const otherLabel = nuanceLabels[otherNuance] || otherNuance;
+    const otherColor = gc(otherNuance);
+    h += '<div class="city-row"><span class="city-rank">' + (i+1) + '</span><span class="city-name">' + c[3] +
+      ' <span style="color:' + otherColor + ';font-size:11px">(' + otherLabel + ' en ' + otherYear + ')</span></span><span class="city-ins">' + fmt(c[2]) + '</span></div>';
+  });
+  if (cities.length > 50) h += '<div class="city-row" style="justify-content:center;color:#555;font-size:11px">… et ' + (cities.length - 50) + ' autres</div>';
+  document.getElementById("panelList").innerHTML = h;
+  document.getElementById("panel").classList.add("open");
+}
+document.getElementById("panelClose").addEventListener("click",()=>{document.getElementById("panel").classList.remove("open")});
+
+function computeSankey(flows,W,H,nw,np){
+  const lS=new Set(),rS=new Set();flows.forEach(d=>{lS.add(d[0]);rS.add(d[1])});
+  const lN=[...lS].sort((a,b)=>go(a)-go(b)),rN=[...rS].sort((a,b)=>go(a)-go(b));
+  const lT={},rT={};lN.forEach(n=>lT[n]=0);rN.forEach(n=>rT[n]=0);
+  flows.forEach(d=>{lT[d[0]]+=d[2];rT[d[1]]+=d[2]});
+  const tL=Object.values(lT).reduce((a,b)=>a+b,0);
+  const usH=H-np*(Math.max(lN.length,rN.length)-1);
+  const sc=usH/tL;
+  let yL=0;const lP={};lN.forEach(n=>{const h=lT[n]*sc;lP[n]={y:yL,h,t:lT[n]};yL+=h+np});
+  let yR=0;const rP={};rN.forEach(n=>{const h=rT[n]*sc;rP[n]={y:yR,h,t:rT[n]};yR+=h+np});
+  const lO={},rO={};lN.forEach(n=>lO[n]=0);rN.forEach(n=>rO[n]=0);
+  const sorted=[...flows].sort((a,b)=>{const oa=go(a[0]),ob=go(b[0]);return oa!==ob?oa-ob:go(a[1])-go(b[1])});
+  const links=sorted.map(d=>{const[s,t,v]=d;const lh=Math.max(v*sc,1);const sy=lP[s].y+lO[s],ty=rP[t].y+rO[t];lO[s]+=lh;rO[t]+=lh;return{s,t,v,sy,ty,lh}});
+  return{lN:lN.map(n=>({id:n,x:0,y:lP[n].y,w:nw,h:lP[n].h,t:lP[n].t})),rN:rN.map(n=>({id:n,x:W-nw,y:rP[n].y,w:nw,h:rP[n].h,t:rP[n].t})),links,nw};
+}
+
+let currentHeight=900;
+
+function render(th){
+  currentThreshold=th;
+  const{flows,count,total}=aggregate(th);
+  document.getElementById("stats").textContent=fmt(count)+" communes — "+fmt(total)+" inscrits"+(weightMode==="communes"?" — pondération : nombre de communes":" — pondération : inscrits");
+  if(!flows.length){document.getElementById("sankey").innerHTML="";return}
+
+  const svg=document.getElementById("sankey");
+  svg.style.height=currentHeight+"px";
+  const rect=svg.getBoundingClientRect();
+  const W=rect.width,H=currentHeight;
+  const sideM=Math.min(190,Math.max(60,W*0.14));
+  const m={t:24,r:sideM,b:6,l:sideM};
+  const iW=W-m.l-m.r,iH=H-m.t-m.b,nw=Math.max(8,Math.min(14,W/80)),np=4;
+  const fontSize=W<600?9:11, numSize=W<600?7:9;
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  const L=computeSankey(flows,iW,iH,nw,np);
+  let h='<g transform="translate('+m.l+','+m.t+')">';
+
+  L.links.forEach(lk=>{
+    const x0=nw,x1=iW-nw,cx=(x0+x1)/2;
+    const p="M"+x0+","+lk.sy+" C"+cx+","+lk.sy+" "+cx+","+lk.ty+" "+x1+","+lk.ty+" L"+x1+","+(lk.ty+lk.lh)+" C"+cx+","+(lk.ty+lk.lh)+" "+cx+","+(lk.sy+lk.lh)+" "+x0+","+(lk.sy+lk.lh)+" Z";
+    const c=gc(lk.s);
+    h+='<path d="'+p+'" fill="'+c+'" fill-opacity="0.25" stroke="'+c+'" stroke-opacity="0.4" stroke-width="0.5" class="lk" data-s="'+lk.s+'" data-t="'+lk.t+'" data-v="'+lk.v+'" style="cursor:pointer"/>';
+  });
+
+  const showNums = currentHeight > 700;
+  L.lN.forEach(n=>{
+    const c=gc(n.id),lb=nuanceLabels[n.id]||n.id;
+    h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="l"/>';
+    h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2)+'" text-anchor="end" dominant-baseline="central" fill="#ccc" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="end" dominant-baseline="central" fill="#555" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+  });
+  L.rN.forEach(n=>{
+    const c=gc(n.id),lb=nuanceLabels[n.id]||n.id;
+    h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="r"/>';
+    h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2)+'" text-anchor="start" dominant-baseline="central" fill="#ccc" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="#555" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+  });
+
+  h+='<text x="'+(nw/2)+'" y="-8" text-anchor="middle" fill="#fff" font-size="'+(W<600?11:14)+'" font-family="Space Mono" font-weight="700">2020</text>';
+  h+='<text x="'+(iW-nw/2)+'" y="-8" text-anchor="middle" fill="#fff" font-size="'+(W<600?11:14)+'" font-family="Space Mono" font-weight="700">2026</text>';
+  h+='</g>';
+  svg.innerHTML=h;
+
+  const tt=document.getElementById("tooltip");
+  svg.querySelectorAll(".lk").forEach(el=>{
+    el.addEventListener("mouseenter",()=>{
+      el.setAttribute("fill-opacity","0.55");el.setAttribute("stroke-opacity","0.8");
+      const sl=nuanceLabels[el.dataset.s]||el.dataset.s,tl=nuanceLabels[el.dataset.t]||el.dataset.t;
+      const cities=getCities(el.dataset.s,el.dataset.t,currentThreshold);
+      const top3=cities.slice(0,3).map(c=>c[3]).join(", ");
+      const val=parseInt(el.dataset.v);
+      const unit=weightMode==="inscrits"?fmt(val)+" inscrits":fmt(val)+" communes";
+      tt.innerHTML='<div class="label">'+sl+' → '+tl+'</div><div class="value">'+unit+' ('+cities.length+' communes)</div>'+(top3?'<div style="color:#777;font-size:11px;margin-top:4px">'+top3+'…</div>':'');
+      tt.style.opacity=1;
+    });
+    el.addEventListener("mousemove",e=>{tt.style.left=(e.clientX+15)+"px";tt.style.top=(e.clientY-10)+"px"});
+    el.addEventListener("mouseleave",()=>{el.setAttribute("fill-opacity","0.25");el.setAttribute("stroke-opacity","0.4");tt.style.opacity=0});
+    el.addEventListener("click",()=>{showPanel(el.dataset.s,el.dataset.t)});
+  });
+  svg.querySelectorAll(".nd").forEach(el=>{
+    el.style.cursor="pointer";
+    el.addEventListener("mouseenter",()=>{
+      const id=el.dataset.id,side=el.dataset.side;
+      svg.querySelectorAll(".lk").forEach(lk=>{
+        const match=side==="l"?lk.dataset.s===id:lk.dataset.t===id;
+        lk.setAttribute("fill-opacity",match?"0.55":"0.05");
+        lk.setAttribute("stroke-opacity",match?"0.8":"0.1");
+      });
+    });
+    el.addEventListener("mouseleave",()=>{
+      svg.querySelectorAll(".lk").forEach(lk=>{lk.setAttribute("fill-opacity","0.25");lk.setAttribute("stroke-opacity","0.4")});
+    });
+    el.addEventListener("click",()=>{showNodePanel(el.dataset.id,el.dataset.side)});
+  });
+}
+
+const slider=document.getElementById("threshold");
+const label=document.getElementById("thresholdLabel");
+slider.addEventListener("input",()=>{
+  const v=parseInt(slider.value);
+  label.textContent=fmt(v)+" inscrits";
+  render(v);
+});
+
+const hSlider=document.getElementById("heightSlider");
+const hLabel=document.getElementById("heightLabel");
+hSlider.addEventListener("input",()=>{
+  currentHeight=parseInt(hSlider.value);
+  hLabel.textContent=currentHeight+" px";
+  render(currentThreshold);
+});
+
+const modeToggle=document.getElementById("modeToggle");
+modeToggle.addEventListener("click",()=>{
+  weightMode=weightMode==="inscrits"?"communes":"inscrits";
+  modeToggle.textContent=weightMode==="inscrits"?"Inscrits":"Nb communes";
+  modeToggle.style.borderColor=weightMode==="communes"?"#667eea":"rgba(255,255,255,0.15)";
+  render(currentThreshold);
+});
+</script>
+<div style="text-align:center;padding:20px 10px 16px;font-size:12px;color:#555;font-family:'DM Sans',sans-serif">
+  <a href="https://theo.delemazure.fr" target="_blank" style="color:#aaa;text-decoration:none">Théo Delemazure</a>
+  &nbsp;·&nbsp;
+  <a href="https://x.com/DelemazureTheo" target="_blank" style="color:#aaa;text-decoration:none">Twitter</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/TheoDlmz/municipales-transferts" target="_blank" style="color:#aaa;text-decoration:none">Repo Github</a>
+</div>
+</body>
+</html>
