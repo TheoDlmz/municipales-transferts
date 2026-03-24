@@ -8,36 +8,53 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:#0a0a0f;color:#e0e0e0;font-family:'DM Sans',sans-serif;min-height:100vh;padding:10px 4px}
+  :root {
+    /* Colors */
+    color-scheme: light dark;
+    --bg: light-dark(#fffdfd, #0a0a0f);
+    --fg: light-dark(#222, #e0e0e0);
+    --fg-10: color-mix(in srgb, var(--fg) 10%, transparent);
+    --fg-20: color-mix(in srgb, var(--fg) 20%, transparent);
+    --fg-50: color-mix(in srgb, var(--fg) 50%, transparent);
+    --fg-70: color-mix(in srgb, var(--fg) 70%, transparent);
+
+    --tooltip-bg: light-dark(rgba(255, 255, 255, 0.95), rgba(20, 20, 30, 0.95));
+    --tooltip-border: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  }
+  body{background:var(--bg);color:var(--fg);font-family:'DM Sans',sans-serif;min-height:100vh;padding:10px 4px}
   .header{text-align:center;margin-bottom:10px}
-  .header h1{font-family:'Space Mono',monospace;font-size:1.4rem;color:#fff;letter-spacing:-0.5px;margin-bottom:4px}
-  .header p{font-size:0.85rem;color:#888}
+  .header h1{font-family:'Space Mono',monospace;font-size:1.4rem;color:var(--fg);letter-spacing:-0.5px;margin-bottom:4px}
+  .header p{font-size:0.85rem;color:var(--fg)}
   .container{margin:0 auto;position:relative}
   #sankey{width:100%;height:900px;cursor:default}
-  .tooltip{position:fixed;background:rgba(20,20,30,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity 0.15s;backdrop-filter:blur(10px);z-index:100;font-family:'DM Sans',sans-serif;max-width:320px}
-  .tooltip .label{font-weight:700;color:#fff;margin-bottom:4px}
-  .tooltip .value{color:#aaa}
+  .tooltip{position:fixed;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:8px;padding:10px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity 0.15s;backdrop-filter:blur(10px);z-index:100;font-family:'DM Sans',sans-serif;max-width:320px}
+  .tooltip .label{font-weight:700;color:var(--fg);margin-bottom:4px}
+  .tooltip .value{color:var(--fg-70)}
   .controls{display:flex;justify-content:center;gap:10px 20px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:0 4px}
-  .controls label{font-size:12px;color:#888;display:flex;align-items:center;gap:4px}
+  .controls label{font-size:12px;color:var(--fg);display:flex;align-items:center;gap:4px}
   .controls input[type="range"]{width:160px;accent-color:#667eea}
-  .controls span{font-family:'Space Mono',monospace;font-size:11px;color:#bbb;min-width:90px}
-  .stats{font-family:'Space Mono',monospace;font-size:11px;color:#666;text-align:center;margin-bottom:4px}
-  .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100vh;background:rgba(15,15,25,0.98);border-left:1px solid rgba(255,255,255,0.1);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
+  .controls span{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);min-width:90px}
+  .stats{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);text-align:center;margin-bottom:4px}
+  .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100vh;background:var(--tooltip-bg);border-left:1px solid var(--tooltip-border);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
   .panel.open{right:0}
-  .panel-close{position:absolute;top:12px;right:16px;background:none;border:1px solid rgba(255,255,255,0.2);color:#aaa;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
-  .panel-close:hover{background:rgba(255,255,255,0.1);color:#fff}
-  .panel h2{font-family:'Space Mono',monospace;font-size:14px;color:#fff;margin-bottom:6px}
-  .panel .flow-label{font-size:13px;color:#aaa;margin-bottom:16px}
-  .panel .city-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);gap:8px}
-  .panel .city-name{font-size:13px;color:#ddd;flex:1}
-  .panel .city-ins{font-family:'Space Mono',monospace;font-size:12px;color:#888}
-  .panel .city-rank{font-family:'Space Mono',monospace;font-size:11px;color:#555;width:24px;flex-shrink:0}
-  .hint{font-size:10px;color:#555;text-align:center;margin-bottom:4px;font-style:italic}
+  .panel-close{position:absolute;top:12px;right:16px;background:none;border:1px solid var(--fg-20);color:var(--fg-70);font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+  .panel-close:hover{background:var(--fg-10);color:var(--fg)}
+  .panel h2{font-family:'Space Mono',monospace;font-size:14px;color:var(--fg);margin-bottom:6px}
+  .panel .flow-label{font-size:13px;color:var(--fg-70);margin-bottom:16px}
+  .panel .city-row{display:flex; align-items:center;padding:8px 0;border-bottom:1px solid var(--fg-10);gap:8px}
+  .panel .city-row:last-child{border-bottom:none}
+  .panel .city-name{font-size:13px;color:var(--fg);flex:1}
+  .panel .city-ins{font-family:'Space Mono',monospace;font-size:12px;color:var(--fg-70)}
+  .panel .city-rank{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);width:24px;flex-shrink:0}
+  .hint{font-size:10px;color:var(--fg-50);text-align:center;margin-bottom:4px;font-style:italic}
   .drop-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:12px;padding:60px 40px;text-align:center;margin:40px auto;max-width:600px;color:#666;transition:all 0.2s}
   .drop-zone.over{border-color:#667eea;color:#aaa;background:rgba(102,126,234,0.05)}
   .drop-zone input{display:none}
   .drop-zone label{cursor:pointer;color:#667eea;text-decoration:underline}
   .drop-zone p{margin-top:12px;font-size:13px}
+  #dropArea{text-align:center;padding:60px;color:var(--fg);font-size:14px}
+  #deptSelect{background:var(--tooltip-bg);color:var(--fg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 8px;font-family:'Space Mono',monospace;font-size:11px;max-width:220px}
+  #modeToggle{background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);cursor:pointer}
 </style>
 </head>
 <body>
@@ -46,13 +63,13 @@
   <p>Transferts de nuances politiques — filtré par taille de commune (inscrits 2026)</p>
 </div>
 <div class="container">
-  <div id="dropArea" style="text-align:center;padding:60px;color:#666;font-size:14px">
+  <div id="dropArea">
     Chargement des données…
   </div>
   <div id="mainUI" style="display:none">
     <div class="controls">
       <label>Département :
-        <select id="deptSelect" style="background:#1a1a2a;color:#bbb;border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 8px;font-family:'Space Mono',monospace;font-size:11px;max-width:220px"></select>
+        <select id="deptSelect"></select>
       </label>
       <label>Communes de plus de :
         <input type="range" id="threshold" min="0" max="100000" step="500" value="0">
@@ -64,7 +81,7 @@
       </label>
       <label style="cursor:pointer;user-select:none">
         Pondération :
-        <span id="modeToggle" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:6px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:11px;color:#bbb;cursor:pointer">Inscrits</span>
+        <span id="modeToggle">Inscrits</span>
       </label>
     </div>
     <div class="stats" id="stats"></div>
@@ -209,7 +226,7 @@ function showPanel(src,tgt){
   const top=cities.slice(0,50);
   let h="";
   top.forEach((c,i)=>{h+='<div class="city-row"><span class="city-rank">'+(i+1)+'</span><span class="city-name">'+c[3]+'</span><span class="city-ins">'+fmt(c[2])+'</span></div>'});
-  if(cities.length>50)h+='<div class="city-row" style="justify-content:center;color:#555;font-size:11px">… et '+(cities.length-50)+' autres</div>';
+  if(cities.length>50)h+='<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et '+(cities.length-50)+' autres</div>';
   document.getElementById("panelList").innerHTML=h;
   document.getElementById("panel").classList.add("open");
 }
@@ -237,7 +254,7 @@ function showNodePanel(nuance, side){
     h += '<div class="city-row"><span class="city-rank">' + (i+1) + '</span><span class="city-name">' + c[3] +
       ' <span style="color:' + otherColor + ';font-size:11px">(' + otherLabel + ' en ' + otherYear + ')</span></span><span class="city-ins">' + fmt(c[2]) + '</span></div>';
   });
-  if (cities.length > 50) h += '<div class="city-row" style="justify-content:center;color:#555;font-size:11px">… et ' + (cities.length - 50) + ' autres</div>';
+  if (cities.length > 50) h += '<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et ' + (cities.length - 50) + ' autres</div>';
   document.getElementById("panelList").innerHTML = h;
   document.getElementById("panel").classList.add("open");
 }
@@ -290,14 +307,14 @@ function render(th){
   L.lN.forEach(n=>{
     const c=gc(n.id),lb=nuanceLabels[n.id]||n.id;
     h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="l"/>';
-    h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2)+'" text-anchor="end" dominant-baseline="central" fill="#ccc" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
-    if(showNums) h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="end" dominant-baseline="central" fill="#555" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+    h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
   });
   L.rN.forEach(n=>{
     const c=gc(n.id),lb=nuanceLabels[n.id]||n.id;
     h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="r"/>';
-    h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2)+'" text-anchor="start" dominant-baseline="central" fill="#ccc" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
-    if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="#555" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+    h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
   });
 
   h+='<text x="'+(nw/2)+'" y="-8" text-anchor="middle" fill="#fff" font-size="'+(W<600?11:14)+'" font-family="Space Mono" font-weight="700">2020</text>';
@@ -358,7 +375,7 @@ const modeToggle=document.getElementById("modeToggle");
 modeToggle.addEventListener("click",()=>{
   weightMode=weightMode==="inscrits"?"communes":"inscrits";
   modeToggle.textContent=weightMode==="inscrits"?"Inscrits":"Nb communes";
-  modeToggle.style.borderColor=weightMode==="communes"?"#667eea":"rgba(255,255,255,0.15)";
+  modeToggle.style.borderColor=weightMode==="communes"?"#667eea":"var(--tooltip-border)";
   render(currentThreshold);
 });
 
