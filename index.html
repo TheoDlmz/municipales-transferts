@@ -10,7 +10,9 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root {
     /* Colors */
-    color-scheme: light dark;
+    color-scheme: dark;
+    &[data-light="true"] {color-scheme: light;}
+    &[data-light="false"] {color-scheme: dark;}
     --bg: light-dark(#fffdfd, #0a0a0f);
     --fg: light-dark(#222, #e0e0e0);
     --fg-10: color-mix(in srgb, var(--fg) 10%, transparent);
@@ -54,7 +56,7 @@
   .drop-zone p{margin-top:12px;font-size:13px}
   #dropArea{text-align:center;padding:60px;color:var(--fg);font-size:14px}
   #deptSelect{background:var(--tooltip-bg);color:var(--fg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 8px;font-family:'Space Mono',monospace;font-size:11px;max-width:220px}
-  #modeToggle{background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);cursor:pointer}
+  #modeToggle, #themeToggle{background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 10px;font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);cursor:pointer}
 </style>
 </head>
 <body>
@@ -82,6 +84,10 @@
       <label style="cursor:pointer;user-select:none">
         Pondération :
         <span id="modeToggle">Inscrits</span>
+      </label>
+      <label style="cursor:pointer;user-select:none">
+        Thème :
+        <span id="themeToggle">Sombre</span>
       </label>
     </div>
     <div class="stats" id="stats"></div>
@@ -377,6 +383,13 @@ modeToggle.addEventListener("click",()=>{
   modeToggle.textContent=weightMode==="inscrits"?"Inscrits":"Nb communes";
   modeToggle.style.borderColor=weightMode==="communes"?"#667eea":"var(--tooltip-border)";
   render(currentThreshold);
+});
+
+const themeToggle=document.getElementById("themeToggle");
+themeToggle.addEventListener("click",()=>{
+  const isLight=document.documentElement.dataset.light === "true";
+  document.documentElement.dataset.light=!isLight;
+  themeToggle.textContent=document.documentElement.dataset.light==="true"?"Clair":"Sombre";
 });
 
 document.getElementById("deptSelect").addEventListener("change",function(){
