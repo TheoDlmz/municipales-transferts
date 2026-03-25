@@ -10,9 +10,14 @@
   *{margin:0;padding:0;box-sizing:border-box}
   :root {
     /* Colors */
-    color-scheme: dark;
+    color-scheme: light dark;
     &[data-light="true"] {color-scheme: light;}
     &[data-light="false"] {color-scheme: dark;}
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        color-scheme: dark;
+      }
+    }
     --bg: light-dark(#fffdfd, #0a0a0f);
     --fg: light-dark(#222, #e0e0e0);
     --fg-10: color-mix(in srgb, var(--fg) 10%, transparent);
@@ -87,7 +92,7 @@
       </label>
       <label style="cursor:pointer;user-select:none">
         Thème :
-        <span id="themeToggle">Sombre</span>
+        <span id="themeToggle">Auto</span>
       </label>
     </div>
     <div class="stats" id="stats"></div>
@@ -386,11 +391,30 @@ modeToggle.addEventListener("click",()=>{
 });
 
 const themeToggle=document.getElementById("themeToggle");
+const getSystemTheme=()=>window.matchMedia("(prefers-color-scheme: dark)").matches;
+const updateLabel=()=>{
+  const attr=document.documentElement.dataset.light;
+  if(attr===undefined){
+    themeToggle.textContent=`Auto (${getSystemTheme()?"Sombre":"Clair"})`;
+  }else{
+    themeToggle.textContent=attr==="true"?"Clair":"Sombre";
+  }
+};
 themeToggle.addEventListener("click",()=>{
-  const isLight=document.documentElement.dataset.light === "true";
-  document.documentElement.dataset.light=!isLight;
-  themeToggle.textContent=document.documentElement.dataset.light==="true"?"Clair":"Sombre";
+  const attr=document.documentElement.dataset.light;
+  if(attr===undefined){
+    document.documentElement.dataset.light = "true";
+  }else if(attr==="true"){
+    document.documentElement.dataset.light = "false";
+  }else{
+    delete document.documentElement.dataset.light;
+  }
+  updateLabel();
 });
+
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", updateLabel);
 
 document.getElementById("deptSelect").addEventListener("change",function(){
   currentDept=this.value;
