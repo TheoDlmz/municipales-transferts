@@ -44,6 +44,7 @@
 <div class="header">
   <h1>Municipales 2020 → 2026</h1>
   <p>Transferts de nuances politiques — filtré par taille de commune (inscrits 2026)</p>
+  <p id="disclaimer" style="color:#c44;font-size:11px;margin-top:6px">Le graphique ci-dessous ne montre pas les transferts de votes individuels, mais les transferts de nuances politiques des communes entre 2020 et 2026, pondérées par le nombre d'inscrits dans la commune.</p>
 </div>
 <div class="container">
   <div id="dropArea" style="text-align:center;padding:60px;color:#666;font-size:14px">
@@ -367,6 +368,16 @@ document.getElementById("deptSelect").addEventListener("change",function(){
   render(currentThreshold);
 });
 </script>
+<div style="text-align:center;padding:20px 10px 0px;font-size:12px;color:#555;font-family:'DM Sans',sans-serif">
+  Source des données (data.gouv) :
+  <a href="https://www.data.gouv.fr/datasets/elections-municipales-2020-resultats-1er-tour" style="color:#aaa;text-decoration:none">2020 tour 1</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.data.gouv.fr/datasets/municipales-2020-resultats-2nd-tour" style="color:#aaa;text-decoration:none">2020 tour 2</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.data.gouv.fr/datasets/elections-municipales-2026-resultats-du-premier-tour" style="color:#aaa;text-decoration:none">2026 tour 1</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.data.gouv.fr/datasets/elections-municipales-2026-resultats-du-second-tour" style="color:#aaa;text-decoration:none">2026 tour 2</a>
+</div>
 <div style="text-align:center;padding:20px 10px 16px;font-size:12px;color:#555;font-family:'DM Sans',sans-serif">
   <a href="https://theo.delemazure.fr" style="color:#aaa;text-decoration:none">Théo Delemazure</a>
   &nbsp;·&nbsp;
