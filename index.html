@@ -306,7 +306,7 @@ function computeSankey(flows,W,H,nw,np){
   let yR=0;const rP={};rN.forEach(n=>{const h=rT[n]*sc;rP[n]={y:yR,h,t:rT[n]};yR+=h+np});
   const lO={},rO={};lN.forEach(n=>lO[n]=0);rN.forEach(n=>rO[n]=0);
   const sorted=[...flows].sort((a,b)=>{const oa=go(a[0]),ob=go(b[0]);return oa!==ob?oa-ob:go(a[1])-go(b[1])});
-  const links=sorted.map(d=>{const[s,t,v]=d;const lh=Math.max(v*sc,1);const sy=lP[s].y+lO[s],ty=rP[t].y+rO[t];lO[s]+=lh;rO[t]+=lh;return{s,t,v,sy,ty,lh}});
+  const links=sorted.map(d=>{const[s,t,v]=d;const lh=v*sc;const sy=lP[s].y+lO[s],ty=rP[t].y+rO[t];lO[s]+=lh;rO[t]+=lh;return{s,t,v,sy,ty,lh}});
   return{lN:lN.map(n=>({id:n,x:0,y:lP[n].y,w:nw,h:lP[n].h,t:lP[n].t})),rN:rN.map(n=>({id:n,x:W-nw,y:rP[n].y,w:nw,h:rP[n].h,t:rP[n].t})),links,nw};
 }
 
