@@ -240,7 +240,9 @@ function showPanel(src,tgt){
   top.forEach((c,i)=>{h+='<div class="city-row"><span class="city-rank">'+(i+1)+'</span><span class="city-name">'+c[3]+'</span><span class="city-ins">'+fmt(c[2])+'</span></div>'});
   if(cities.length>50)h+='<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et '+(cities.length-50)+' autres</div>';
   document.getElementById("panelList").innerHTML=h;
-  document.getElementById("panel").classList.add("open");
+  setTimeout(() => {
+    document.getElementById("panel").classList.add("open");
+  }, 1);
 }
 function showNodePanel(nuance, side){
   const th = currentThreshold;
@@ -268,10 +270,18 @@ function showNodePanel(nuance, side){
   });
   if (cities.length > 50) h += '<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et ' + (cities.length - 50) + ' autres</div>';
   document.getElementById("panelList").innerHTML = h;
-  document.getElementById("panel").classList.add("open");
+  setTimeout(() => {
+    document.getElementById("panel").classList.add("open");
+  }, 1);
 }
-document.getElementById("panelClose").addEventListener("click",()=>{document.getElementById("panel").classList.remove("open")});
-
+const panel=document.getElementById("panel");
+document.getElementById("panelClose").addEventListener("click",()=>{panel.classList.remove("open")});
+document.addEventListener("click", (e)=>{if (panel.classList.contains("open") && !panel.contains(e.target)) {
+    panel.classList.remove("open");
+}});
+document.addEventListener("keydown", (e) => {if (e.key === "Escape" && panel.classList.contains("open")) {
+    panel.classList.remove("open");
+}});
 function computeSankey(flows,W,H,nw,np){
   const lS=new Set(),rS=new Set();flows.forEach(d=>{lS.add(d[0]);rS.add(d[1])});
   const lN=[...lS].sort((a,b)=>go(a)-go(b)),rN=[...rS].sort((a,b)=>go(a)-go(b));
