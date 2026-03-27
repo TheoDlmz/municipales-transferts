@@ -57,6 +57,12 @@
   .drop-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:12px;padding:60px 40px;text-align:center;margin:40px auto;max-width:600px;color:#666;transition:all 0.2s}
   .drop-zone.over{border-color:#667eea;color:#aaa;background:rgba(102,126,234,0.05)}
   .drop-zone input{display:none}
+  .panel h2{white-space:pre-line; &::before,& span{content:"";display:inline-block;width:10px;height:10px;background:var(--nuance-color);margin-right:8px;border-radius:100%}}
+  .panel .city-name{display:flex;flex-direction:column;gap:3px; &>span{display:inline-flex; gap:5px;align-items:baseline;& .operator{font-size:1.25em}}}
+  .panel .city-dept{font-size:0.8em;opacity:0.7}
+  .panel .city-name .circles{display:inline-flex;gap:2px;align-items:center}
+  .panel .circles .circle{display:inline-block;background:var(--nuance-color);color:white;border-radius:10px;font-size:0.75em;padding:1.25px 3px;}
+  .panel .circles>span:has(.circle){height:100%;display:flex;align-items:center;gap:4px;border:1px solid var(--fg-50,rgba(255,255,255,0.5));padding:1.5px 5px 1.5px 2.5px;border-radius: 12px;}
   .drop-zone label{cursor:pointer;color:#667eea;text-decoration:underline}
   .drop-zone p{margin-top:12px;font-size:13px}
   #dropArea{text-align:center;padding:60px;color:var(--fg);font-size:14px}
@@ -232,12 +238,18 @@ function getCities(src,tgt,th){
 }
 function showPanel(src,tgt){
   const cities=getCities(src,tgt,currentThreshold);
-  document.getElementById("panelTitle").textContent=(nuanceLabels[src]||src)+" → "+(nuanceLabels[tgt]||tgt);
+  const panelTitle=document.getElementById("panelTitle");
+  panelTitle.textContent = (nuanceLabels[src] || src) + "\n→ ";
+  const middleCircle=document.createElement("span");
+  middleCircle.style.setProperty("--nuance-color", gc(tgt));
+  panelTitle.appendChild(middleCircle);
+  panelTitle.appendChild(document.createTextNode(nuanceLabels[tgt] || tgt));
+  panelTitle.style.setProperty("--nuance-color",gc(src));
   const total=cities.reduce((a,c)=>a+c[2],0);
   document.getElementById("panelSub").textContent=fmt(cities.length)+" communes — "+fmt(total)+" inscrits";
   const top=cities.slice(0,50);
   let h="";
-  top.forEach((c,i)=>{h+='<div class="city-row"><span class="city-rank">'+(i+1)+'</span><span class="city-name">'+c[3]+'</span><span class="city-ins">'+fmt(c[2])+'</span></div>'});
+  top.forEach((c,i)=>{h+=`<div class="city-row"><span class="city-rank">${i+1}</span><span class="city-name"><span>${c[3]} <span class="city-dept">${c[4]}</span></span></span><span class="city-ins">${fmt(c[2])}</span></div>`});
   if(cities.length>50)h+='<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et '+(cities.length-50)+' autres</div>';
   document.getElementById("panelList").innerHTML=h;
   setTimeout(() => {
@@ -256,17 +268,17 @@ function showNodePanel(nuance, side){
   const lb = nuanceLabels[nuance] || nuance;
   const year = side === "l" ? "2020" : "2026";
   const otherYear = side === "l" ? "2026" : "2020";
-  document.getElementById("panelTitle").textContent = lb + " en " + year;
+  const panelTitle=document.getElementById("panelTitle");
+  panelTitle.textContent = lb + " en " + year;
+  panelTitle.style.setProperty("--nuance-color",gc(nuance));
   const total = cities.reduce((a,c) => a + c[2], 0);
   document.getElementById("panelSub").textContent = fmt(cities.length) + " communes — " + fmt(total) + " inscrits";
   const top = cities.slice(0, 50);
   let h = "";
   top.forEach((c, i) => {
-    const otherNuance = side === "l" ? c[1] : c[0];
-    const otherLabel = nuanceLabels[otherNuance] || otherNuance;
-    const otherColor = gc(otherNuance);
-    h += '<div class="city-row"><span class="city-rank">' + (i+1) + '</span><span class="city-name">' + c[3] +
-      ' <span style="color:' + otherColor + ';font-size:11px">(' + otherLabel + ' en ' + otherYear + ')</span></span><span class="city-ins">' + fmt(c[2]) + '</span></div>';
+    const circles = [`<span class='circle' style='--nuance-color:` + gc(c[0]) + `'>20</span>`,`<span class='circle middleCircle' style='--nuance-color:` + gc(c[1]) + `'>26</span>`];
+    const evolutionOperator=`<span class="operator">${(nuanceLabels[c[0]]||c[0])===(nuanceLabels[c[1]]||c[1])?"—":"→"}</span>`;
+    h += `<div class="city-row"><span class="city-rank">${i+1}</span><span class="city-name"><span>${c[3]} <span class="city-dept">${c[4]}</span></span><span class="circles" style="font-size:11px">${side === "l"?circles[0]+evolutionOperator+"<span>"+circles[1]+(nuanceLabels[c[1]] || c[1])+"</span>":"<span>"+circles[0]+(nuanceLabels[c[0]] || c[0])+"</span>"+evolutionOperator+circles[1]}</span></span><span class="city-ins">${fmt(c[2])}</span></div>`;
   });
   if (cities.length > 50) h += '<div class="city-row" style="justify-content:center;color:var(--fg);font-size:11px">… et ' + (cities.length - 50) + ' autres</div>';
   document.getElementById("panelList").innerHTML = h;
