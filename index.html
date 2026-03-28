@@ -40,9 +40,9 @@
   .controls{display:flex;justify-content:center;gap:10px 20px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:0 4px}
   .controls label{font-size:12px;color:var(--fg);display:flex;align-items:center;gap:4px}
   .controls input[type="range"]{width:160px;accent-color:#667eea}
-  .controls span{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);min-width:90px}
+  .controls span, .controls button{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);min-width:90px}
   .stats{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);text-align:center;margin-bottom:4px}
-  .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100vh;background:var(--tooltip-bg);border-left:1px solid var(--tooltip-border);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
+  .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100dvh;background:var(--tooltip-bg);border-left:1px solid var(--tooltip-border);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
   .panel.open{right:0}
   .panel-close{position:absolute;top:12px;right:16px;background:none;border:1px solid var(--fg-20);color:var(--fg-70);font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
   .panel-close:hover{background:var(--fg-10);color:var(--fg)}
@@ -95,11 +95,11 @@
       </label>
       <label style="cursor:pointer;user-select:none">
         Pondération :
-        <span id="modeToggle">Inscrits</span>
+        <button id="modeToggle">Inscrits</button>
       </label>
       <label style="cursor:pointer;user-select:none">
         Thème :
-        <span id="themeToggle">Auto</span>
+        <button id="themeToggle">Auto</button>
       </label>
     </div>
     <div class="stats" id="stats"></div>
@@ -211,7 +211,7 @@ const nuanceLabels={"LEXG":"Extrême gauche","LFI":"La France insoumise","LCOM":
 
 function gc(n){return nuanceColors[n]||"#757575"}
 function go(n){return blocOrder[n]!==undefined?blocOrder[n]:15}
-function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")}
+function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")}
 
 let currentThreshold=0;
 let weightMode="inscrits"; // "inscrits" or "communes"
@@ -315,7 +315,7 @@ let currentHeight=900;
 function render(th){
   currentThreshold=th;
   const{flows,count,total}=aggregate(th);
-  document.getElementById("stats").textContent=fmt(count)+" communes — "+fmt(total)+" inscrits"+(weightMode==="communes"?" — pondération : nombre de communes":" — pondération : inscrits");
+  document.getElementById("stats").textContent=fmt(count)+" communes — "+fmt(total)+" inscrits";
   if(!flows.length){document.getElementById("sankey").innerHTML="";return}
 
   const getAbbreviation=(txt)=>{
