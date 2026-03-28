@@ -351,8 +351,8 @@ function render(th){
     if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
   });
 
-  h+='<text x="'+(nw/2)+'" y="-8" text-anchor="middle" fill="#fff" font-size="'+(W<600?11:14)+'" font-family="Space Mono" font-weight="700">2020</text>';
-  h+='<text x="'+(iW-nw/2)+'" y="-8" text-anchor="middle" fill="#fff" font-size="'+(W<600?11:14)+'" font-family="Space Mono" font-weight="700">2026</text>';
+  h+='<text x="'+(nw/2)+'" y="-8" text-anchor="middle" fill="var(--fg-70)" font-size="'+(W<600?10:14)+'" font-family="Space Mono" font-weight="700">2020</text>';
+  h+='<text x="'+(iW-nw/2)+'" y="-8" text-anchor="middle" fill="var(--fg-70)" font-size="'+(W<600?10:14)+'" font-family="Space Mono" font-weight="700">2026</text>';
   h+='</g>';
   svg.innerHTML=h;
 
