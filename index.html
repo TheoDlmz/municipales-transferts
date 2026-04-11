@@ -25,6 +25,8 @@
     --fg-50: color-mix(in srgb, var(--fg) 50%, transparent);
     --fg-70: color-mix(in srgb, var(--fg) 70%, transparent);
 
+    --accent-color: #667eea;
+
     --tooltip-bg: light-dark(rgba(255, 255, 255, 0.95), rgba(20, 20, 30, 0.95));
     --tooltip-border: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
   }
@@ -37,10 +39,27 @@
   .tooltip{position:fixed;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:8px;padding:10px 14px;font-size:13px;pointer-events:none;opacity:0;transition:opacity 0.15s;backdrop-filter:blur(10px);z-index:100;font-family:'DM Sans',sans-serif;max-width:320px}
   .tooltip .label{font-weight:700;color:var(--fg);margin-bottom:4px}
   .tooltip .value{color:var(--fg-70)}
-  .controls{display:flex;justify-content:center;gap:10px 20px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:0 4px}
+  .controls,.controls>div{display:flex;justify-content:center;gap:10px 20px;margin-bottom:10px;align-items:center;flex-wrap:wrap;padding:0 4px}
+  /* .controls>div{display: contents;} */
   .controls label{font-size:12px;color:var(--fg);display:flex;align-items:center;gap:4px}
-  .controls input[type="range"]{width:160px;accent-color:#667eea}
-  .controls span, .controls button{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);min-width:90px}
+  .controls input[type="range"]{width:160px;accent-color:var(--accent-color)}
+  .controls span, .controls button:not(.search-clear){font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);min-width:90px}
+  .search-group{position:relative;min-width:220px;display:flex;align-items:center}
+  .search-group input{background:var(--tooltip-bg);color:var(--fg);border:1px solid var(--tooltip-border);border-radius:6px;padding:6px 28px 6px 8px;font-family:'DM Sans',sans-serif;font-size:16px;min-width:220px}
+  ::placeholder{font-size:12px;}
+  .search-group input:focus{outline:none;border-color:var(--fg-50)}
+  .search-group input.selected{border-color:var(--accent-color);}
+  .search-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:none;color:var(--fg-50);cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;border-radius:4px;display:none;}
+  .search-clear:hover{background:var(--fg-10);color:var(--fg)}
+  .search-clear.show{display:block}
+  .city-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:8px;margin-top:4px;max-height:240px;overflow-y:auto;z-index:150;display:none;box-shadow:0 10px 30px var(--fg-10)}
+  .city-suggestions.open{display:block}
+  .city-suggestion{padding:7px 9px;cursor:pointer;font-size:12px;color:var(--fg);border-bottom:1px solid var(--fg-10);display:flex;justify-content:space-between;gap:8px}
+  .city-suggestion.active{background:var(--fg-10)}
+  .city-suggestion:last-child{border-bottom:none}
+  .city-suggestion:hover{background:var(--fg-10)}
+  .city-suggestion small{font-family:'Space Mono',monospace;color:var(--fg-70)}
+  #ciSearchStatus{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--fg-70);min-width:220px}
   .stats{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);text-align:center;margin-bottom:4px}
   .panel{position:fixed;top:0;right:-420px;width:min(400px,100vw);height:100dvh;background:var(--tooltip-bg);border-left:1px solid var(--tooltip-border);transition:right 0.3s ease;z-index:200;overflow-y:auto;padding:20px 16px;backdrop-filter:blur(20px)}
   .panel.open{right:0}
@@ -55,7 +74,7 @@
   .panel .city-rank{font-family:'Space Mono',monospace;font-size:11px;color:var(--fg-70);width:24px;flex-shrink:0}
   .hint{font-size:10px;color:var(--fg-50);text-align:center;margin-bottom:4px;font-style:italic}
   .drop-zone{border:2px dashed rgba(255,255,255,0.15);border-radius:12px;padding:60px 40px;text-align:center;margin:40px auto;max-width:600px;color:#666;transition:all 0.2s}
-  .drop-zone.over{border-color:#667eea;color:#aaa;background:rgba(102,126,234,0.05)}
+  .drop-zone.over{border-color:var(--accent-color);color:#aaa;background:rgba(102,126,234,0.05)}
   .drop-zone input{display:none}
   .panel h2{white-space:pre-line; &::before,& span{content:"";display:inline-block;width:10px;height:10px;background:var(--nuance-color);margin-right:8px;border-radius:100%}}
   .panel .city-name{display:flex;flex-direction:column;gap:3px; &>span{display:inline-flex; gap:5px;align-items:baseline;& .operator{font-size:1.25em}}}
@@ -63,7 +82,7 @@
   .panel .city-name .circles{display:inline-flex;gap:2px;align-items:center}
   .panel .circles .circle{display:inline-block;background:var(--nuance-color);color:white;border-radius:10px;font-size:0.75em;padding:1.25px 3px;}
   .panel .circles>span:has(.circle){height:100%;display:flex;align-items:center;gap:4px;border:1px solid var(--fg-50,rgba(255,255,255,0.5));padding:1.5px 5px 1.5px 2.5px;border-radius: 12px;}
-  .drop-zone label{cursor:pointer;color:#667eea;text-decoration:underline}
+  .drop-zone label{cursor:pointer;color:var(--accent-color);text-decoration:underline}
   .drop-zone p{margin-top:12px;font-size:13px}
   #dropArea{text-align:center;padding:60px;color:var(--fg);font-size:14px}
   #deptSelect{background:var(--tooltip-bg);color:var(--fg);border:1px solid var(--tooltip-border);border-radius:6px;padding:4px 8px;font-family:'Space Mono',monospace;font-size:11px;max-width:220px}
@@ -74,7 +93,7 @@
 <div class="header">
   <h1>Municipales 2020 → 2026</h1>
   <p>Transferts de nuances politiques — filtré par taille de commune (inscrits 2026)</p>
-  <p id="disclaimer" style="color:#c44;font-size:11px;margin-top:6px">Le graphique ci-dessous ne montre pas les transferts de votes individuels, mais les transferts de nuances politiques des communes entre 2020 et 2026, pondérées par le nombre d'inscrits dans la commune.</p>
+  <p id="disclaimer" style="color:#c44;font-size:11px;margin-top:6px;max-width:60ch;margin-inline:auto;">Le graphique ci-dessous ne montre pas les transferts de votes individuels, mais les transferts de nuances politiques des communes entre 2020 et 2026, pondérées par le nombre d'inscrits dans la commune.</p>
 </div>
 <div class="container">
   <div id="dropArea">
@@ -82,25 +101,34 @@
   </div>
   <div id="mainUI" style="display:none">
     <div class="controls">
-      <label>Département :
-        <select id="deptSelect"></select>
-      </label>
-      <label>Communes de plus de :
-        <input type="range" id="threshold" min="0" max="100000" step="500" value="0">
-        <span id="thresholdLabel">0 inscrits</span>
-      </label>
-      <label>Hauteur :
-        <input type="range" id="heightSlider" min="400" max="3000" step="50" value="900">
-        <span id="heightLabel">900 px</span>
-      </label>
-      <label style="cursor:pointer;user-select:none">
-        Pondération :
-        <button id="modeToggle">Inscrits</button>
-      </label>
-      <label style="cursor:pointer;user-select:none">
-        Thème :
-        <button id="themeToggle">Auto</button>
-      </label>
+      <div class="view">
+        <label>Hauteur :
+          <input type="range" id="heightSlider" min="400" max="3000" step="50" value="900">
+          <span id="heightLabel">900 px</span>
+        </label>
+        <label style="cursor:pointer;user-select:none">
+          Pondération :
+          <button id="modeToggle">Inscrits</button>
+        </label>
+        <label style="cursor:pointer;user-select:none">
+          Thème :
+          <button id="themeToggle">Auto</button>
+        </label>
+      </div>
+      <div class="content">
+        <label>Département :
+          <select id="deptSelect"></select>
+        </label>
+        <label>Communes de plus de :
+          <input type="range" id="threshold" min="0" max="100000" step="500" value="0">
+          <span id="thresholdLabel">0 inscrits</span>
+        </label>
+        <label class="search-group">Commune :
+          <input type="text" id="ciSearch" placeholder="Paris, Lyon…" autocomplete="off" aria-autocomplete="list" aria-expanded="false" aria-controls="ciSuggestions" data-form-type="none">
+          <button type="button" id="ciSearchClear" class="search-clear" aria-label="Effacer la recherche">×</button>
+          <div id="ciSuggestions" class="city-suggestions"></div>
+        </label>
+      </div>
     </div>
     <div class="stats" id="stats"></div>
     <div class="hint">Cliquez sur un flux pour voir les plus grandes villes concernées</div>
@@ -216,6 +244,197 @@ function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g," ")}
 let currentThreshold=0;
 let weightMode="inscrits"; // "inscrits" or "communes"
 
+let selectedCityFlow=null; // {commune, dept, src, tgt, ins}
+let previewCityFlow=null; // Temporary preview from suggestions
+let suggestionCursor=-1;
+let currentSuggestionRows=[];
+
+const normText=(s)=>(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+function getVisibleCities(){
+  const out=[];
+  const seen=new Map();
+  for(const c of CITIES){
+    if(c[2] < currentThreshold) continue;
+    if(currentDept!=="all" && c[4]!==currentDept) continue;
+    const key=(c[3]||"").toLowerCase()+"|"+c[4];
+    const prev=seen.get(key);
+    if(!prev || c[2] > prev[2]) seen.set(key, c);
+  }
+  for(const c of seen.values()) out.push(c);
+  out.sort((a,b)=>b[2]-a[2]);
+  return out;
+}
+
+function hideCitySuggestions(){
+  document.getElementById("ciSuggestions").classList.remove("open");
+  document.getElementById("ciSearch").setAttribute("aria-expanded","false");
+  suggestionCursor=-1;
+}
+
+function showCitySuggestions(){
+  document.getElementById("ciSuggestions").classList.add("open");
+  document.getElementById("ciSearch").setAttribute("aria-expanded","true");
+}
+
+function updateClearSearchButton(){
+  const input=document.getElementById("ciSearch");
+  const btn=document.getElementById("ciSearchClear");
+  btn.classList.toggle("show", !!input.value);
+}
+
+function getActiveFlow(){
+  return previewCityFlow || selectedCityFlow;
+}
+
+function applyFlowHighlight(){
+  const svg=document.getElementById("sankey");
+  const active=getActiveFlow();
+  svg.querySelectorAll(".lk").forEach(lk=>{
+    if(active){
+      const match=lk.dataset.s===active.src && lk.dataset.t===active.tgt;
+      lk.setAttribute("fill-opacity",match?"0.7":"0.05");
+      lk.setAttribute("stroke-opacity",match?"0.9":"0.08");
+    }else{
+      lk.setAttribute("fill-opacity","0.25");
+      lk.setAttribute("stroke-opacity","0.4");
+    }
+  });
+  svg.querySelectorAll(".nd").forEach(nd=>{
+    if (active) {
+      const match=((nd.dataset.side==="l" && nd.dataset.id===active.src) || (nd.dataset.side==="r" && nd.dataset.id===active.tgt));
+      nd.setAttribute("fill-opacity",match?"1":"0.1");
+    } else {
+      nd.setAttribute("fill-opacity","1");
+    }
+  });
+  svg.querySelectorAll(".ndtxt").forEach(txt=>{
+    if (active) {
+      const match=((txt.dataset.side==="l" && txt.dataset.id===active.src) || (txt.dataset.side==="r" && txt.dataset.id===active.tgt));
+      txt.setAttribute("fill-opacity",match?"1":"0.1");
+    } else {
+      txt.setAttribute("fill-opacity","1");
+    }
+  });
+}
+
+function setPreviewFlow(row){
+  previewCityFlow={commune:row[3],dept:row[4],src:row[0],tgt:row[1],ins:row[2]};
+  applyFlowHighlight();
+}
+
+function clearPreviewFlow(){
+  previewCityFlow=null;
+  applyFlowHighlight();
+}
+
+function setSuggestionCursor(index){
+  const box=document.getElementById("ciSuggestions");
+  const items=[...box.querySelectorAll(".city-suggestion[data-index]")];
+  items.forEach(el=>el.classList.remove("active"));
+  if(index<0 || index>=items.length){
+    suggestionCursor=-1;
+    clearPreviewFlow();
+    return;
+  }
+  suggestionCursor=index;
+  const activeEl=items[index];
+  activeEl.classList.add("active");
+  activeEl.scrollIntoView({block:"nearest"});
+  const row=currentSuggestionRows[index];
+  if(row) setPreviewFlow(row);
+}
+
+function commitSuggestion(index){
+  const row=currentSuggestionRows[index];
+  if(!row) return;
+  selectedCityFlow={commune:row[3],dept:row[4],src:row[0],tgt:row[1],ins:row[2]};
+  previewCityFlow=null;
+  const input=document.getElementById("ciSearch");
+  input.value = row[3];
+  input.classList.add("selected");
+  render(currentThreshold);
+  hideCitySuggestions();
+}
+
+function clearCityFlowFocus(){
+  selectedCityFlow=null;
+  previewCityFlow=null;
+  render(currentThreshold);
+}
+
+function refreshCitySuggestions(){
+  const input=document.getElementById("ciSearch");
+  const box=document.getElementById("ciSuggestions");
+  const query=normText(input.value);
+  const cities=getVisibleCities();
+  updateClearSearchButton();
+
+  // Clear invalid focus if it no longer exists with active filters.
+  if(selectedCityFlow){
+    const exists=cities.some(c=>c[3]===selectedCityFlow.commune&&c[4]===selectedCityFlow.dept&&c[0]===selectedCityFlow.src&&c[1]===selectedCityFlow.tgt);
+    if(!exists){
+      selectedCityFlow=null;
+    }
+  }
+
+  if(!query){
+    box.innerHTML="";
+    currentSuggestionRows=[];
+    hideCitySuggestions();
+    clearPreviewFlow();
+    return;
+  }
+
+  const matches=[];
+  for(const c of cities){
+    if(normText(c[3]).includes(query)) matches.push(c);
+    if(matches.length>=12) break;
+  }
+
+  if(!matches.length){
+    box.innerHTML='<div class="city-suggestion"><span>Aucun résultat</span></div>';
+    currentSuggestionRows=[];
+    showCitySuggestions();
+    clearPreviewFlow();
+    return;
+  }
+
+  const mkFlow=(c)=>{
+    const sl=nuanceLabels[c[0]]||c[0];
+    const tl=nuanceLabels[c[1]]||c[1];
+    return sl+" -> "+tl;
+  };
+  currentSuggestionRows=matches;
+  box.innerHTML=matches.map((c,i)=>'<div class="city-suggestion" data-index="'+i+'" tabindex="-1"><span>'+c[3]+' <small>'+c[4]+'</small></span><small>'+mkFlow(c)+'</small></div>').join("");
+  box.querySelectorAll(".city-suggestion").forEach(el=>{
+    const idx=parseInt(el.dataset.index);
+    if(isNaN(idx)) return;
+    el.addEventListener("mouseenter",()=>setSuggestionCursor(idx));
+    el.addEventListener("focus",()=>setSuggestionCursor(idx));
+    el.addEventListener("mouseleave",()=>setSuggestionCursor(-1));
+    el.addEventListener("blur",()=>setSuggestionCursor(-1));
+    el.addEventListener("click",()=>{
+      commitSuggestion(idx);
+    });
+  });
+  setSuggestionCursor(-1);
+  showCitySuggestions();
+}
+
+function syncCityFocusWithFilters(){
+  if(!selectedCityFlow) return;
+  const exists=CITIES.some(c=>
+    c[3]===selectedCityFlow.commune &&
+    c[4]===selectedCityFlow.dept &&
+    c[0]===selectedCityFlow.src &&
+    c[1]===selectedCityFlow.tgt &&
+    c[2]>=currentThreshold &&
+    (currentDept==="all"||c[4]===currentDept)
+  );
+  if(!exists) selectedCityFlow=null;
+}
+
 function aggregate(th){
   const map={},mapCount={};let count=0,total=0;
   for(const c of CITIES){
@@ -314,6 +533,7 @@ let currentHeight=900;
 
 function render(th){
   currentThreshold=th;
+  syncCityFocusWithFilters();
   const{flows,count,total}=aggregate(th);
   document.getElementById("stats").textContent=fmt(count)+" communes — "+fmt(total)+" inscrits";
   if(!flows.length){document.getElementById("sankey").innerHTML="";return}
@@ -328,7 +548,6 @@ function render(th){
   const svg=document.getElementById("sankey");
   svg.style.height=currentHeight+"px";
   const rect=svg.getBoundingClientRect();
-  console.log(rect.width, rect.height);
   const W=rect.width,H=currentHeight;
   const sideM=Math.min(190,Math.max(30,W*0.14));
   const m={t:24,r:sideM,b:6,l:sideM};
@@ -349,20 +568,22 @@ function render(th){
   L.lN.forEach(n=>{
     const c=gc(n.id),lb=getLabel(n.id);
     h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="l"/>';
-    h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
-    if(showNums) h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+    h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500" data-id="'+n.id+'" data-side="l" class="ndtxt">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x-6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="end" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono" data-id="'+n.id+'" data-side="l" class="ndtxt">'+fmt(n.t)+'</text>';
   });
   L.rN.forEach(n=>{
     const c=gc(n.id),lb=getLabel(n.id);
     h+='<rect x="'+n.x+'" y="'+n.y+'" width="'+n.w+'" height="'+Math.max(n.h,1)+'" fill="'+c+'" rx="2" class="nd" data-id="'+n.id+'" data-side="r"/>';
-    h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500">'+lb+'</text>';
-    if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono">'+fmt(n.t)+'</text>';
+    h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-70)" font-size="'+fontSize+'" font-family="DM Sans" font-weight="500" data-id="'+n.id+'" data-side="r" class="ndtxt">'+lb+'</text>';
+    if(showNums) h+='<text x="'+(n.x+n.w+6)+'" y="'+(n.y+n.h/2+fontSize+2)+'" text-anchor="start" dominant-baseline="central" fill="var(--fg-50)" font-size="'+numSize+'" font-family="Space Mono" data-id="'+n.id+'" data-side="r" class="ndtxt">'+fmt(n.t)+'</text>';
   });
 
   h+='<text x="'+(nw/2)+'" y="-8" text-anchor="middle" fill="var(--fg-70)" font-size="'+(W<600?10:14)+'" font-family="Space Mono" font-weight="700">2020</text>';
   h+='<text x="'+(iW-nw/2)+'" y="-8" text-anchor="middle" fill="var(--fg-70)" font-size="'+(W<600?10:14)+'" font-family="Space Mono" font-weight="700">2026</text>';
   h+='</g>';
   svg.innerHTML=h;
+
+  applyFlowHighlight();
 
   const tt=document.getElementById("tooltip");
   svg.querySelectorAll(".lk").forEach(el=>{
@@ -377,7 +598,7 @@ function render(th){
       tt.style.opacity=1;
     });
     el.addEventListener("mousemove",e=>{tt.style.left=(e.clientX+15)+"px";tt.style.top=(e.clientY-10)+"px"});
-    el.addEventListener("mouseleave",()=>{el.setAttribute("fill-opacity","0.25");el.setAttribute("stroke-opacity","0.4");tt.style.opacity=0});
+    el.addEventListener("mouseleave",()=>{applyFlowHighlight();tt.style.opacity=0});
     el.addEventListener("click",()=>{showPanel(el.dataset.s,el.dataset.t)});
   });
   svg.querySelectorAll(".nd").forEach(el=>{
@@ -415,6 +636,7 @@ slider.addEventListener("input",()=>{
   const v=parseInt(slider.value);
   label.textContent=fmt(v)+" inscrits";
   render(v);
+  refreshCitySuggestions();
 });
 
 const hSlider=document.getElementById("heightSlider");
@@ -429,7 +651,7 @@ const modeToggle=document.getElementById("modeToggle");
 modeToggle.addEventListener("click",()=>{
   weightMode=weightMode==="inscrits"?"communes":"inscrits";
   modeToggle.textContent=weightMode==="inscrits"?"Inscrits":"Nb communes";
-  modeToggle.style.borderColor=weightMode==="communes"?"#667eea":"var(--tooltip-border)";
+  modeToggle.style.borderColor=weightMode==="communes"?"var(--accent-color)":"var(--tooltip-border)";
   render(currentThreshold);
 });
 
@@ -462,6 +684,52 @@ window
 document.getElementById("deptSelect").addEventListener("change",function(){
   currentDept=this.value;
   render(currentThreshold);
+  refreshCitySuggestions();
+});
+
+const ciSearch=document.getElementById("ciSearch");
+ciSearch.addEventListener("input",refreshCitySuggestions);
+ciSearch.addEventListener("keydown",(e)=>{
+  const hasSuggestions=currentSuggestionRows.length>0;
+  if(e.key==="ArrowDown" && hasSuggestions){
+    e.preventDefault();
+    const next=suggestionCursor<currentSuggestionRows.length-1?suggestionCursor+1:0;
+    setSuggestionCursor(next);
+    return;
+  }
+  if(e.key==="ArrowUp" && hasSuggestions){
+    e.preventDefault();
+    const prev=suggestionCursor>0?suggestionCursor-1:currentSuggestionRows.length-1;
+    setSuggestionCursor(prev);
+    return;
+  }
+  if(e.key==="Enter" && suggestionCursor>=0){
+    e.preventDefault();
+    commitSuggestion(suggestionCursor);
+    return;
+  }
+  if(e.key==="Escape"){
+    hideCitySuggestions();
+    clearPreviewFlow();
+  }
+  if(e.key==="Backspace"){
+    clearCityFlowFocus();
+    refreshCitySuggestions();
+  }
+});
+document.getElementById("ciSearchClear").addEventListener("click",()=>{
+  clearCityFlowFocus();
+  ciSearch.value="";
+  updateClearSearchButton();
+  refreshCitySuggestions();
+  ciSearch.focus();
+});
+
+document.addEventListener("click",(e)=>{
+  if(!e.target.closest(".search-group") && document.getElementById("ciSuggestions").classList.contains("open")){
+    hideCitySuggestions();
+    clearPreviewFlow();
+  }
 });
 </script>
 <div style="text-align:center;padding:20px 5px 0px;font-size:12px;color:#555;font-family:'DM Sans',sans-serif">
