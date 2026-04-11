@@ -384,14 +384,26 @@ function render(th){
     el.style.cursor="pointer";
     el.addEventListener("mouseenter",()=>{
       const id=el.dataset.id,side=el.dataset.side;
+      let oppNd=[];
       svg.querySelectorAll(".lk").forEach(lk=>{
         const match=side==="l"?lk.dataset.s===id:lk.dataset.t===id;
+        if(match) oppNd.push(side==="l"?lk.dataset.t:lk.dataset.s);
         lk.setAttribute("fill-opacity",match?"0.55":"0.05");
         lk.setAttribute("stroke-opacity",match?"0.8":"0.1");
       });
+      svg.querySelectorAll(".nd").forEach(nd=>{
+        const match=(side===nd.dataset.side && nd.dataset.id===id) || (side!==nd.dataset.side && oppNd.includes(nd.dataset.id));
+        nd.setAttribute("fill-opacity",match?"1":"0.1");
+      });
+      svg.querySelectorAll(".ndtxt").forEach(txt=>{
+        const match=(side===txt.dataset.side && txt.dataset.id===id) || (side!==txt.dataset.side && oppNd.includes(txt.dataset.id));
+        txt.setAttribute("fill-opacity",match?"1":"0.1");
+      });
     });
     el.addEventListener("mouseleave",()=>{
-      svg.querySelectorAll(".lk").forEach(lk=>{lk.setAttribute("fill-opacity","0.25");lk.setAttribute("stroke-opacity","0.4")});
+      applyFlowHighlight();
+      svg.querySelectorAll(".nd").forEach(nd=>nd.setAttribute("fill-opacity","1"));
+      svg.querySelectorAll(".ndtxt").forEach(txt=>txt.setAttribute("fill-opacity","1"));
     });
     el.addEventListener("click",()=>{showNodePanel(el.dataset.id,el.dataset.side)});
   });
