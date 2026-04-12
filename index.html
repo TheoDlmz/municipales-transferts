@@ -60,7 +60,7 @@
   .search-clear.show{display:block}
   .city-suggestions{position:absolute;top:100%;left:0;right:0;background:var(--tooltip-bg);border:1px solid var(--tooltip-border);border-radius:8px;margin-top:4px;max-height:240px;overflow-y:auto;z-index:150;display:none;box-shadow:0 10px 30px var(--fg-10)}
   .city-suggestions.open{display:block}
-  .city-suggestion{padding:7px 9px;cursor:pointer;font-size:12px;color:var(--fg);border-bottom:1px solid var(--fg-10);display:flex;justify-content:space-between;gap:8px;flex-direction:column;}
+  .city-suggestion{padding:7px 9px;cursor:pointer;font-size:12px;color:var(--fg);border-bottom:1px solid var(--fg-10);display:flex;justify-content:space-between;gap:8px;align-items:center;}
   .city-suggestion.active{background:var(--fg-10)}
   .city-suggestion:last-child{border-bottom:none}
   .city-suggestion:hover{background:var(--fg-10)}
@@ -374,6 +374,7 @@ function commitSuggestion(index){
 function clearCityFlowFocus(){
   selectedCityFlow=null;
   previewCityFlow=null;
+  document.getElementById("ciSearch").classList.remove("selected");
   render(currentThreshold);
 }
 
@@ -403,6 +404,7 @@ function refreshCitySuggestions(){
   const matches=[];
   for(const c of cities){
     if(normText(c[3]).includes(query)) matches.push(c);
+    if(normText(c[4]).includes(query)) matches.push(c);
     if(matches.length>=12) break;
   }
 
@@ -526,13 +528,10 @@ function showNodePanel(nuance, side){
   }, 1);
 }
 const panel=document.getElementById("panel");
-document.getElementById("panelClose").addEventListener("click",()=>{panel.classList.remove("open")});
-document.addEventListener("click", (e)=>{if (panel.classList.contains("open") && !panel.contains(e.target)) {
-    panel.classList.remove("open");
-}});
-document.addEventListener("keydown", (e) => {if (e.key === "Escape" && panel.classList.contains("open")) {
-    panel.classList.remove("open");
-}});
+function closePanel(){panel.classList.remove("open")}
+document.getElementById("panelClose").addEventListener("click",()=>closePanel());
+document.addEventListener("click", (e)=>{if (panel.classList.contains("open") && !panel.contains(e.target)) closePanel()});
+
 function computeSankey(flows,W,H,nw,np){
   const lS=new Set(),rS=new Set();flows.forEach(d=>{lS.add(d[0]);rS.add(d[1])});
   const lN=[...lS].sort((a,b)=>go(a)-go(b)),rN=[...rS].sort((a,b)=>go(a)-go(b));
@@ -738,6 +737,12 @@ document.getElementById("ciSearchClear").addEventListener("click",()=>{
   updateClearSearchButton();
   refreshCitySuggestions();
   ciSearch.focus();
+});
+
+document.addEventListener("keydown", (e) => {
+  if(e.key !== "Escape") return;
+  if(panel.classList.contains("open")){closePanel();return;}
+  if(document.getElementById("ciSearch").classList.contains("selected")) clearCityFlowFocus();
 });
 
 document.addEventListener("click",(e)=>{
